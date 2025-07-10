@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Link } from 'react-router';
 import { MdLogin } from "react-icons/md";
 import SearchBox from './SearchBox';
-import { RouteLogIn } from '@/routeHelpers/RouteName';
+import { RouteLogIn } from '@/helpers/RouteName';
 
 const Navbar = () => {
   return (

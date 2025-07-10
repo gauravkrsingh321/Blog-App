@@ -2,22 +2,22 @@ import { handleError } from "../helpers/handleError.js"
 import User from "../models/user.model.js"
 import bcryptjs from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-export const Register = async (req, res, next) => {
+export const SignUp = async (req, res, next) => {
     try {
         const { name, email, password } = req.body
          
         if(!name || !email || !password) {
-          next(handleError(400, 'Please Enter All Details.')) 
+          return next(handleError(400, 'Please Enter All Details.')) 
         }
         
         if(password.length < 8) {
-          next(handleError(400, 'Password must be 8 characters long')) 
+          return next(handleError(400, 'Password must be 8 characters long')) 
         }
 
         const checkuser = await User.findOne({ email })
         if(checkuser) {
             // user already registered 
-            next(handleError(409, 'User already registered.'))
+           return next(handleError(409, 'User already registered.'))
         }
 
         const hashedPassword = await bcryptjs.hash(password,10)
@@ -44,13 +44,13 @@ export const Login = async (req, res, next) => {
         const { email, password } = req.body
         const user = await User.findOne({ email })
         if (!user) {
-            next(handleError(404, 'Invalid login credentials.'))
+           return next(handleError(404, 'Invalid login credentials.'))
         }
         const hashedPassword = user.password
 
-        const comparePassword = bcryptjs.compare(password, hashedPassword)
+        const comparePassword = await bcryptjs.compare(password, hashedPassword)
         if (!comparePassword) {
-            next(handleError(404, 'Invalid login credentials.'))
+           return next(handleError(404, 'Invalid login credentials.'))
         }
 
         const token = jwt.sign({
@@ -58,7 +58,9 @@ export const Login = async (req, res, next) => {
             name: user.name,
             email: user.email,
             avatar: user.avatar
-        }, process.env.JWT_SECRET)
+        }, process.env.JWT_SECRET,{
+            expiresIn:"7h"
+        })
 
 
         res.cookie('access_token', token, {
@@ -84,21 +86,23 @@ export const Login = async (req, res, next) => {
 export const GoogleLogin = async (req, res, next) => {
     try {
         const { name, email, avatar } = req.body
+       
+         if (!email || !name) {
+      return next(handleError(400, 'Missing Google User credentials.'));
+    }
         let user
         user = await User.findOne({ email })
         if (!user) {
             //  create new user 
             const password = Math.random().toString()
-            const hashedPassword = bcryptjs.hashSync(password)
+            const hashedPassword = await bcryptjs.hash(password, 10);
             const newUser = new User({
                 name, email, password: hashedPassword, avatar
             })
-
             user = await newUser.save()
-
         }
 
-
+        //We generate a JWT in Google login so that your backend can manage user sessions, protect routes, and control access — independent of Google.
         const token = jwt.sign({
             _id: user._id,
             name: user.name,

@@ -6,10 +6,7 @@ export const authenticate = async (req, res, next) => {
             return next(401, 'Unauthorized - Token Missing')
         }
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-        if(!decodedToken) {
-            next(401, 'Unauthorized -  Invalid Token')
-        }
-        req.user = decodedToken
+        req.user = decodedToken //attach user info from token to request
         next();
     } 
     catch (error) {

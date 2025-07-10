@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
 import { dbConnect } from "./config/db.js";
 import cors from "cors"
+import AuthRoute from "./routes/auth.route.js";
 const app = express()
 
 dotenv.config()
@@ -15,7 +16,20 @@ app.use(cors({
   credentials:true
 }))
 
-// dbConnect()
+// route setup  
+app.use('/api/auth', AuthRoute)
 
+
+dbConnect()
+
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500
+    const message = err.message || 'Internal server error.'
+    res.status(statusCode).json({
+        success: false,
+        statusCode,
+        message
+    })
+})
 
 app.listen(PORT, ()=> console.log(`Server running at port ${PORT}`))

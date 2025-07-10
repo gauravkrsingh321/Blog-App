@@ -14,13 +14,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Card } from "@/components/ui/card";
-import { RouteSignUp } from "@/routeHelpers/RouteName";
-import { Link } from "react-router";
+import { RouteIndex, RouteSignUp } from "@/helpers/RouteName";
+import { Link, useNavigate } from "react-router";
+import { getEnv } from "@/helpers/getEnv";
+import { showToast } from "@/helpers/showToast";
+import GoogleLogin from "@/components/GoogleLogin";
 
 const LogIn = () => {
+  const navigate = useNavigate();
+
   const formSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(8, "Password must be atleast 8 characters long"),
+    password: z.string().min(3, "Password field required"),
   });
 
   const form = useForm({
@@ -31,8 +36,28 @@ const LogIn = () => {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    //TODO Chec
+    try {
+      const res = await fetch(`${getEnv("VITE_API_BASE_URL")}/auth/login`, {
+        method: "post",
+        headers: { "Content-type": "application/json" },
+        credentials: "include", //if you want to receive a cookie from the backend and have the browser store it in cookies, especially in a cross-origin (frontend ≠ backend) setup
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast("error", data.message || "Login failed");
+        return; // 👈 prevent further execution if login fails
+      }
+
+      showToast("success", data.message || "Login successful");
+      navigate(RouteIndex);
+    } catch (error) {
+      console.log(error);
+      showToast("error", error.message);
+    }
   }
 
   return (
@@ -41,6 +66,9 @@ const LogIn = () => {
         <h1 className="text-2xl font-bold text-center mb-5">
           Login Into Your Account
         </h1>
+
+        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="mb-3">
@@ -66,7 +94,11 @@ const LogIn = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -76,7 +108,7 @@ const LogIn = () => {
 
             <div className="mt-5">
               <Button type="submit" className="w-full">
-                Sign In
+                Log In
               </Button>
               <div className="mt-5 text-sm flex justify-center items-center gap-2">
                 <p>Don&apos;t have an account?</p>

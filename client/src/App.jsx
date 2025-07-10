@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Route, Routes } from "react-router"
 import Layout from "./Layout/Layout"
-import { RouteIndex, RouteLogIn, RouteSignUp } from "./routeHelpers/RouteName"
+import { RouteIndex, RouteLogIn, RouteSignUp } from "./helpers/RouteName"
 import Index from "./pages/Index"
 import LogIn from "./pages/LogIn"
 import SignUp from "./pages/SignUp"
