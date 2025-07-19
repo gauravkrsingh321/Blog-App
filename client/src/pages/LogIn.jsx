@@ -19,8 +19,12 @@ import { Link, useNavigate } from "react-router";
 import { getEnv } from "@/helpers/getEnv";
 import { showToast } from "@/helpers/showToast";
 import GoogleLogin from "@/components/GoogleLogin";
+import { setUser } from "@/redux/auth.user.slice";
+import { useDispatch } from "react-redux";
 
 const LogIn = () => {
+  const dispatch = useDispatch()
+
   const navigate = useNavigate();
 
   const formSchema = z.object({
@@ -51,6 +55,8 @@ const LogIn = () => {
         showToast("error", data.message || "Login failed");
         return; // 👈 prevent further execution if login fails
       }
+      
+      dispatch(setUser(data.user))
 
       showToast("success", data.message || "Login successful");
       navigate(RouteIndex);
@@ -66,6 +72,13 @@ const LogIn = () => {
         <h1 className="text-2xl font-bold text-center mb-5">
           Login Into Your Account
         </h1>
+
+        <div className="">
+          <GoogleLogin />
+          <div className="border my-5 flex justify-center items-center">
+            <span className="absolute bg-white text-sm">Or</span>
+          </div>
+        </div>
 
         
 
